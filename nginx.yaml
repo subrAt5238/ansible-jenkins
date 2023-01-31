@@ -1,0 +1,17 @@
+---
+- name: nginx
+  hosts: all
+  become: yes
+  tasks:
+  - name: Installing nginx
+    ansible.builtin.apt:
+      name: nginx
+      update_cache: true
+      state: present
+  - name: Restarting the nginx service 
+    ansible.builtin.systemd:
+      name: nginx
+      state: started
+      enabled: yes
+      
+  
