@@ -1,12 +1,13 @@
 ---
-- name: Installing wildfly in Ubuntu 20.04 and centos
-  hosts: webservers
+- name: Installing wildfly in Ubuntu 20.04
+  hosts: node
   become: true
   tasks:
     - name: installing Java 11
-      ansible.builtin.package:
-        name: "{{java_package}}"
-        state: present
+      ansible.builtin.apt:
+        name: default-jdk
+        update_cache: true
+        state: absent
     - name: downloading tar files
       ansible.builtin.get_url :
         url: https://download.jboss.org/wildfly/16.0.0.Final/wildfly-16.0.0.Final.tar.gz
@@ -59,7 +60,7 @@
     - name: copying the wildfly launch script into /opt/wildfly/bin/ folder
       ansible.builtin.copy:
         remote_src: yes
-        src: /opt/wildfly/docs/contrib/scripts/systemd/launch.sh 
+        src: /opt/wildfly/docs/contrib/scripts/systemd/launch.sh
         dest: /opt/wildfly/bin/
     - name: make wildfly user as the owner of launch script
       ansible.builtin.file:
@@ -69,7 +70,7 @@
     - name: copy service definition file to Systemd directory
       ansible.builtin.copy:
         remote_src: yes
-        src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.service 
+        src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.service
         dest: /etc/systemd/system/
     - name: Systemd files status
       ansible.builtin.systemd:
