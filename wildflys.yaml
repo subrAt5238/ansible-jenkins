@@ -1,6 +1,6 @@
 ---
 - name: Installing wildfly in Ubuntu 20.04
-  hosts: node
+  hosts: java
   become: true
   tasks:
     - name: installing Java 11
