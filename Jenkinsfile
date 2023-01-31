@@ -10,7 +10,7 @@ pipeline {
      stage ("ansible") {
         steps ("playbook") {
           sh "ansible -i hosts -m ping all"
-          sh "ansible-playbook -i hosts nginx.yaml"
+          sh "ansible-playbook -i hosts wildfly.yaml"
         }
     }
   }
