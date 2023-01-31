@@ -1,6 +1,6 @@
 ---
 - name: nginx
-  hosts: all
+  hosts: node
   become: yes
   tasks:
   - name: Installing nginx
