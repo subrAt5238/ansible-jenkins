@@ -1,0 +1,80 @@
+---
+- name: Installing wildfly in Ubuntu 20.04
+  hosts: node
+  become: true
+  tasks:
+    - name: installing Java 11
+      ansible.builtin.apt:
+        name: default-jdk
+        update_cache: true
+        state: absent
+    - name: downloading tar files
+      ansible.builtin.get_url :
+        url: https://download.jboss.org/wildfly/16.0.0.Final/wildfly-16.0.0.Final.tar.gz
+        dest: /home/jenkins
+    - name: Creating Wildfly directory
+      ansible.builtin.file:
+        path: /opt/wildfly
+        state: directory
+    - name: Untar the Wilfly files
+      ansible.builtin.unarchive:
+        remote_src: yes
+        src: /home/jenkins/wildfly-16.0.0.Final.tar.gz
+        dest: /opt/wildfly
+    - name: moving the wildffly into /opt/wildfly
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /opt/wildfly/wildfly-16.0.0.Final/
+        dest: /opt/wildfly/
+    - name: Create group "wildfly"
+      ansible.builtin.group:
+        name: wildfly
+        state: present
+        system: yes
+    - name: Creating user "wildfly"
+      ansible.builtin.user:
+        name: wildfly
+        group: wildfly
+        home: /opt/wildfly
+        shell: /sbin/nologin
+        system: true
+    - name: Changing File Ownership permissions
+      ansible.builtin.file:
+        path: /opt/wildfly/
+        recurse: true
+        owner: wildfly
+        group: wildfly
+    - name: Changing File Execution permissions
+      ansible.builtin.file:
+        path: /opt/wildfly/bin/
+        mode: o+x
+    - name: creating wildfly folder in /etc/
+      ansible.builtin.file:
+        path: /etc/wildfly
+        state: directory
+    - name: copying the wildfly config into /etc/wildfly folder
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.conf
+        dest: /etc/wildfly/
+    - name: copying the wildfly launch script into /opt/wildfly/bin/ folder
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /opt/wildfly/docs/contrib/scripts/systemd/launch.sh
+        dest: /opt/wildfly/bin/
+    - name: make wildfly user as the owner of launch script
+      ansible.builtin.file:
+        path: /opt/wildfly/bin/launch.sh
+        mode: +x
+        owner: wildfly
+    - name: copy service definition file to Systemd directory
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.service
+        dest: /etc/systemd/system/
+    - name: Systemd files status
+      ansible.builtin.systemd:
+        daemon_reload: true
+        name: wildfly.service
+        enabled: true
+        state: started
